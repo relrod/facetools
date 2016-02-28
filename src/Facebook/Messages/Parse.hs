@@ -1,5 +1,6 @@
 module Main where
 
+import Control.Monad (when)
 import Data.Aeson
 import qualified Data.ByteString.Lazy as L
 import Data.List
@@ -12,6 +13,7 @@ import Data.Time.Format
 import qualified Data.Set as S
 import Text.HTML.TagSoup
 import System.Environment (getArgs)
+import System.Directory (doesDirectoryExist, getDirectoryContents)
 
 import Types
 
@@ -47,13 +49,21 @@ main :: IO ()
 main = do
   args <- getArgs
   let filename = head args
+      outputDir = args !! 1
+
+  outDirExists <- doesDirectoryExist outputDir
+  when (not outDirExists) (error "Output directory does not exist")
+
+  outDirContents <- getDirectoryContents outputDir
+  when (not (length outDirContents == 2)) (error "Output directory is not empty")
+
   threads <- fmap msgThreads (msgs filename)
   let threadConvos =
         fmap (reverse . mapMaybe parseMessage . msgMessages) threads
-  mapM_ process (zip [1..] threadConvos)
+  mapM_ (process outputDir) (zip [1..] threadConvos)
   where
     users d = S.toList . S.fromList $ fmap mUser d
-    process (n, d) = do
+    process outputDir (n, d) = do
       putStrLn $ "Processing " ++ show n ++ ".json: " ++ show (users d)
-      L.writeFile ("/tmp/out/" ++ show n ++ ".json") (encode d)
-      appendFile "/tmp/out/index" (show n ++ ".json: " ++ show (users d) ++ "\n")
+      L.writeFile (outputDir ++ "/" ++ show n ++ ".json") (encode d)
+      appendFile (outputDir ++ "/index") (show n ++ ".json: " ++ show (users d) ++ "\n")

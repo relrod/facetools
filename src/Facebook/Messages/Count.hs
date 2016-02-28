@@ -14,17 +14,17 @@ import System.Environment (getArgs)
 import Types
 
 msgs :: String -> IO [Message]
-msgs num = do
-  contents <- L.readFile ("/tmp/out/" ++ num ++ ".json")
+msgs jsonFile = do
+  contents <- L.readFile jsonFile
   let j = decode contents :: Maybe [Message]
   return . fromJust $ j
 
 main :: IO ()
 main = do
   args <- getArgs
-  let num = head args
-  m <- msgs num
-  writeFile ("/tmp/out/" ++ num ++ ".html") (outputGoogle $ groupedMsgs m)
+  let jsonFile = head args
+  m <- msgs jsonFile
+  putStrLn (outputGoogle $ groupedMsgs m)
 
 parseMsgTime :: Message -> Day
 parseMsgTime msg =
