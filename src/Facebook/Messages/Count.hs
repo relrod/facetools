@@ -49,6 +49,7 @@ outputGoogle msgs' =
   "<!doctype html>\n\
   \<html>\
   \<head>\
+  \  <meta charset=\"utf-8\" />\
   \  <script src=\"https://www.gstatic.com/charts/loader.js\"></script>\
   \  <script>\
   \    google.charts.load(\"current\", {packages:[\"calendar\"]});\
